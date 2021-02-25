@@ -12,13 +12,14 @@ class Story {
    *   - {title, author, url, username, storyId, createdAt}
    */
 
-  constructor({ storyId, title, author, url, username, createdAt }) {
+  constructor({ storyId, title, author, url, username, createdAt, favorite = false }) {
     this.storyId = storyId;
     this.title = title;
     this.author = author;
     this.url = url;
     this.username = username;
     this.createdAt = createdAt;
+    this.favorite = favorite;
   }
 
   /** Parses hostname out of URL and returns it. */
@@ -204,5 +205,26 @@ class User {
       console.error("loginViaStoredCredentials failed", err);
       return null;
     }
+  }
+
+  /** Takes in story instance as argument, marks story as favorite, updates info through api*/
+  async addFavorite(story) {
+    story.favorite = true;
+    let username = currentUser.username;
+    let storyId = story.storyId;
+    let requestLink = `${BASE_URL}/users/${username}/favorites/${storyId}`;
+    console.log(`Username: ${username} storyId: ${storyId} requestLink: ${requestLink} token: ${currentUser.loginToken}`)
+    const response = await axios.post(requestLink, {token: currentUser.loginToken});
+    console.log(response);
+  }
+
+  async removeFavorite(story) {
+    story.favorite = false;
+    let username = currentUser.username;
+    let storyId = story.storyId;
+    let requestLink = `${BASE_URL}/users/${username}/favorites/${storyId}`;
+    console.log(`Username: ${username} storyId: ${storyId} requestLink: ${requestLink} token: ${currentUser.loginToken}`)
+    const response = await axios.delete(requestLink, {token: currentUser.loginToken});
+    console.log(response);
   }
 }

@@ -7,6 +7,13 @@ let storyList;
 
 async function getAndShowStoriesOnStart() {
   storyList = await StoryList.getStories(); // instantiates StoryList class
+  let favoriteIds = currentUser.favorites.map( val => val.storyId);
+  // Changes favorite attribute of each story in storyList that is in favorites to true when user loaded
+  for (let story of storyList.stories) { 
+    if (favoriteIds.indexOf(story.storyId) >= 0) {
+      story.favorite = true;
+    }
+  }
   $storiesLoadingMsg.remove();
 
   putStoriesOnPage();
@@ -23,8 +30,17 @@ function generateStoryMarkup(story) {
   // console.debug("generateStoryMarkup", story);
 
   const hostName = story.getHostName();
+  let favorited = '<i class="fas fa-star"></i>';
+  let notFavorited = `<i class="far fa-star favorite"></i>`
+  let star;
+  star = story.favorite ? favorited : notFavorited;
+  console.log(star);
+  console.log(`story.favorite: ${story.favorite}`);
+
+
   return $(`
       <li id="${story.storyId}">
+        ${star}
         <a href="${story.url}" target="a_blank" class="story-link">
           ${story.title}
         </a>
@@ -62,6 +78,7 @@ async function putNewStoryOnPage(evt) {
   let newStoryObject = await storyList.addStory(currentUser, storyInfo); // need to await bc addStory is async
   let newStory = generateStoryMarkup(newStoryObject);
   $allStoriesList.prepend(newStory);
+  storyList.unshift(newStoryObject);
 }
 
 $storyForm.on("submit", putNewStoryOnPage);
