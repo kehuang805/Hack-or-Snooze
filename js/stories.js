@@ -50,3 +50,18 @@ function putStoriesOnPage() {
 
   $allStoriesList.show();
 }
+
+/** Creates new story when form is submitted. generates its HTML, and puts on page */
+
+async function putNewStoryOnPage(evt) {
+  evt.preventDefault();
+  let storyInfo = {}; // Object to send into addStory method that contains info sent in post request
+  storyInfo.author = $("#author").val();
+  storyInfo.title = $("#title").val();
+  storyInfo.url = $("#url").val();
+  let newStoryObject = await storyList.addStory(currentUser, storyInfo); // need to await bc addStory is async
+  let newStory = generateStoryMarkup(newStoryObject);
+  $allStoriesList.prepend(newStory);
+}
+
+$storyForm.on("submit", putNewStoryOnPage);

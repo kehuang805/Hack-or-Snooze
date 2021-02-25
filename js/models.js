@@ -88,7 +88,6 @@ class StoryList {
         url: newStory.url
       }
     });
-    console.log(response);
     return new Story(response.data.story);
   }
 }
