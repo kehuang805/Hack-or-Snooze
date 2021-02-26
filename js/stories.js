@@ -11,7 +11,6 @@ async function getAndShowStoriesOnStart() {
   let favoriteIds = currentUser.favorites.map( val => val.storyId);
   // Changes favorite attribute of each story in storyList that is in favorites to true when user loaded
   for (let story of storyList.stories) { 
-    console.log("In getAndShowStoriesOnStart, story: ", story);
     if (favoriteIds.indexOf(story.storyId) >= 0) {
       story.favorite = true;
     }
@@ -30,6 +29,7 @@ async function getAndShowStoriesOnStart() {
 
 function generateStoryMarkup(story) {
   console.debug("generateStoryMarkup", story);
+  console.log(story instanceof Story);
 
   const hostName = story.getHostName();
   const favorited = '<i class="fas fa-star favorite"></i>';
@@ -56,22 +56,11 @@ function putStoriesOnPage() {
   console.debug("putStoriesOnPage");
 
   $allStoriesList.empty();
-  $favStoriesList.empty();
-
-  let favoriteIds = currentUser.favorites.map( val => val.storyId);
 
   // loop through all of our stories and generate HTML for them
   for (let story of storyList.stories) {
-    console.log("In putStoriesOnPage, story: ", story);
     const $story = generateStoryMarkup(story);
-    console.log("After generateStoryMarkup: ", story);
-    console.log("JSON object: ", $story);
     $allStoriesList.append($story);
-
-    if (favoriteIds.indexOf(story.storyId) >= 0) {
-      $favStoriesList.append($story.clone()); // Reference : https://stackoverflow.com/questions/25939472/jquery-appending-an-object-multiple-times
-    }
-
   }
 
   $allStoriesList.show();
@@ -88,7 +77,7 @@ async function putNewStoryOnPage(evt) {
   let newStoryObject = await storyList.addStory(currentUser, storyInfo); // need to await bc addStory is async
   let newStory = generateStoryMarkup(newStoryObject);
   $allStoriesList.prepend(newStory);
-  storyList.unshift(newStoryObject);
+  storyList.stories.unshift(newStoryObject);
 }
 
 $storyForm.on("submit", putNewStoryOnPage);
@@ -97,15 +86,12 @@ $storiesContainer.on("click", ".favorite", favoriteToggle);
 
 /** Event handler for click on star icon. Invokes removeFavorite or addFavorite depending on favorite status of story */
 function favoriteToggle(evt){
-  console.log(evt.target);
   const storyId = evt.target.closest("li").id;
-  console.log(storyId);
   const $story = getStory(storyId);
-  console.log($story);
   if (!checkFavorite($story)) {
     currentUser.addFavorite($story);
     $(evt.target).removeClass('far');
-    $(evt.target).addClass('fas');
+    $(evt.target).addClass('fas');  //toggleClass
   } else {
     currentUser.removeFavorite($story);
     $(evt.target).removeClass('fas');
@@ -133,10 +119,16 @@ function putNewFavoriteOnPage(story) {
   $favStoriesList.prepend(generateStoryMarkup(story));
 }
 
-/** Removes favorite from favorite list and changes star icon*/
-function removeFavoriteOnPage(story) {
-  let id = story.storyId;
-  $(`#${id}`).remove();
+
+function putFavoritesOnPage() {
+  $favStoriesList.empty();
+  let favorites = currentUser.favorites;
+  for (let favorite of favorites) {
+    favorite.favorite = true;
+    putNewFavoriteOnPage(favorite);
+  }
+
+  $favStoriesList.show();
 }
 
 //NEED TO FIX FAVORITE LIST NOT HAVING ALL PAST FAVORITES

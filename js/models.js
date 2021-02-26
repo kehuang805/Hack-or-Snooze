@@ -210,30 +210,26 @@ class User {
   /** Takes in story instance as argument, marks story as favorite, updates info through api*/
   async addFavorite(story) {
     story.favorite = true;
-    let username = currentUser.username;
+    let username = this.username;
     let storyId = story.storyId;
     let requestLink = `${BASE_URL}/users/${username}/favorites/${storyId}`;
-    console.log(`Username: ${username} storyId: ${storyId} requestLink: ${requestLink} token: ${currentUser.loginToken}`)
-    const response = await axios.post(requestLink, {token: currentUser.loginToken});
+    const response = await axios.post(requestLink, {token: this.loginToken});
     console.log(response);
     this.favorites.push(story);
-    putNewFavoriteOnPage(story);
   }
 
   async removeFavorite(story) {
-    story.favorite = false;
-    let username = currentUser.username;
+    let username = this.username;
     let storyId = story.storyId;
     let requestLink = `${BASE_URL}/users/${username}/favorites/${storyId}`;
-    console.log(`Username: ${username} storyId: ${storyId} requestLink: ${requestLink} token: ${currentUser.loginToken}`)
-    const response = await axios.delete(requestLink, {token: currentUser.loginToken});
+    const response = await axios.delete(requestLink, {data: {token: this.loginToken}});
     console.log(response);
+    story.favorite = false;
     let removeIndex = this.getFavoriteRemoveIndex(story);
     this.favorites.splice(removeIndex, 1);
-    removeFavoriteFromPage(story);
   }
 
-  /** Helper function to get removal index of favorite */
+  /** Helper function to get removal index of favorite */ //Can use findIndex
   getFavoriteRemoveIndex(story) {
     let favoriteIds = this.favorites.map(val => val.storyId);
     for (let index in favoriteIds) {
