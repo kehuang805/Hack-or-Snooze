@@ -3,6 +3,7 @@
 // This is the global list of the stories, an instance of StoryList
 let storyList;
 
+
 /** Get and show stories when site first loads. */
 
 async function getAndShowStoriesOnStart() {
@@ -10,6 +11,7 @@ async function getAndShowStoriesOnStart() {
   let favoriteIds = currentUser.favorites.map( val => val.storyId);
   // Changes favorite attribute of each story in storyList that is in favorites to true when user loaded
   for (let story of storyList.stories) { 
+    console.log("In getAndShowStoriesOnStart, story: ", story);
     if (favoriteIds.indexOf(story.storyId) >= 0) {
       story.favorite = true;
     }
@@ -27,16 +29,13 @@ async function getAndShowStoriesOnStart() {
  */
 
 function generateStoryMarkup(story) {
-  // console.debug("generateStoryMarkup", story);
+  console.debug("generateStoryMarkup", story);
 
   const hostName = story.getHostName();
-  let favorited = '<i class="fas fa-star"></i>';
-  let notFavorited = `<i class="far fa-star favorite"></i>`
+  const favorited = '<i class="fas fa-star favorite"></i>';
+  const notFavorited = '<i class="far fa-star favorite"></i>'
   let star;
   star = story.favorite ? favorited : notFavorited;
-  console.log(star);
-  console.log(`story.favorite: ${story.favorite}`);
-
 
   return $(`
       <li id="${story.storyId}">
@@ -57,11 +56,22 @@ function putStoriesOnPage() {
   console.debug("putStoriesOnPage");
 
   $allStoriesList.empty();
+  $favStoriesList.empty();
+
+  let favoriteIds = currentUser.favorites.map( val => val.storyId);
 
   // loop through all of our stories and generate HTML for them
   for (let story of storyList.stories) {
+    console.log("In putStoriesOnPage, story: ", story);
     const $story = generateStoryMarkup(story);
+    console.log("After generateStoryMarkup: ", story);
+    console.log("JSON object: ", $story);
     $allStoriesList.append($story);
+
+    if (favoriteIds.indexOf(story.storyId) >= 0) {
+      $favStoriesList.append($story.clone()); // Reference : https://stackoverflow.com/questions/25939472/jquery-appending-an-object-multiple-times
+    }
+
   }
 
   $allStoriesList.show();
@@ -82,3 +92,49 @@ async function putNewStoryOnPage(evt) {
 }
 
 $storyForm.on("submit", putNewStoryOnPage);
+
+$storiesContainer.on("click", ".favorite", favoriteToggle);
+
+/** Event handler for click on star icon. Invokes removeFavorite or addFavorite depending on favorite status of story */
+function favoriteToggle(evt){
+  console.log(evt.target);
+  const storyId = evt.target.closest("li").id;
+  console.log(storyId);
+  const $story = getStory(storyId);
+  console.log($story);
+  if (!checkFavorite($story)) {
+    currentUser.addFavorite($story);
+    $(evt.target).removeClass('far');
+    $(evt.target).addClass('fas');
+  } else {
+    currentUser.removeFavorite($story);
+    $(evt.target).removeClass('fas');
+    $(evt.target).addClass('far');
+  }
+}
+
+/** Retrieves story object from storyList using storyId. Only used in event handler functions */
+function getStory(id){
+  for (let story of storyList.stories) {
+    if (story.storyId === id) {
+      return story;
+    }
+  }
+  
+}
+
+/** Returns boolean favorite attribute of story object*/
+function checkFavorite(story) {
+  return story.favorite;
+}
+
+/** Adds new favorite on favorite list and changes star icon*/
+function putNewFavoriteOnPage(story) {
+  $favStoriesList.prepend(generateStoryMarkup(story));
+}
+
+/** Removes favorite from favorite list and changes star icon*/
+function removeFavoriteOnPage(story) {
+  let id = story.storyId;
+  $(`#${id}`).remove();
+}

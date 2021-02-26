@@ -42,3 +42,10 @@ function navSubmitClick() {
 }
 
 $navSubmit.on("click", navSubmitClick);
+
+function navFavoriteClick() {
+  hidePageComponents();
+  $favStoriesList.show();
+}
+
+$navFavorite.on("click", navFavoriteClick);

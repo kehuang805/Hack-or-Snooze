@@ -216,6 +216,8 @@ class User {
     console.log(`Username: ${username} storyId: ${storyId} requestLink: ${requestLink} token: ${currentUser.loginToken}`)
     const response = await axios.post(requestLink, {token: currentUser.loginToken});
     console.log(response);
+    this.favorites.push(story);
+    putNewFavoriteOnPage(story);
   }
 
   async removeFavorite(story) {
@@ -226,5 +228,18 @@ class User {
     console.log(`Username: ${username} storyId: ${storyId} requestLink: ${requestLink} token: ${currentUser.loginToken}`)
     const response = await axios.delete(requestLink, {token: currentUser.loginToken});
     console.log(response);
+    let removeIndex = this.getFavoriteRemoveIndex(story);
+    this.favorites.splice(removeIndex, 1);
+    removeFavoriteFromPage(story);
+  }
+
+  /** Helper function to get removal index of favorite */
+  getFavoriteRemoveIndex(story) {
+    let favoriteIds = this.favorites.map(val => val.storyId);
+    for (let index in favoriteIds) {
+      if (favoriteIds[index] === story.storyId) {
+        return index;
+      }
+    }
   }
 }
