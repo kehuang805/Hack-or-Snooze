@@ -52,3 +52,11 @@ function navFavoriteClick() {
 }
 
 $navFavorite.on("click", navFavoriteClick);
+
+function navMyStoriesClick() {
+  hidePageComponents();
+  putMyStoriesOnPage();
+  $myStoriesList.show();
+}
+
+$navMyStories.on("click", navMyStoriesClick);

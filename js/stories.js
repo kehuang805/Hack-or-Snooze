@@ -75,9 +75,12 @@ async function putNewStoryOnPage(evt) {
   storyInfo.title = $("#title").val();
   storyInfo.url = $("#url").val();
   let newStoryObject = await storyList.addStory(currentUser, storyInfo); // need to await bc addStory is async
+  currentUser.ownStories.push(newStoryObject);  // Update front end ownStories array
   let newStory = generateStoryMarkup(newStoryObject);
   $allStoriesList.prepend(newStory);
   storyList.stories.unshift(newStoryObject);
+  $storyForm.trigger("reset"); //Reset() does not work with jquery, stackoverflow: https://stackoverflow.com/questions/16452699/how-to-reset-a-form-using-jquery-with-reset-method
+  $storyForm.hide();
 }
 
 $storyForm.on("submit", putNewStoryOnPage);
@@ -87,13 +90,13 @@ $storiesContainer.on("click", ".favorite", favoriteToggle);
 /** Event handler for click on star icon. Invokes removeFavorite or addFavorite depending on favorite status of story */
 function favoriteToggle(evt){
   const storyId = evt.target.closest("li").id;
-  const $story = getStory(storyId);
-  if (!checkFavorite($story)) {
-    currentUser.addFavorite($story);
+  const story = getStory(storyId);
+  if (!checkFavorite(story)) {
+    currentUser.addFavorite(story);
     $(evt.target).removeClass('far');
     $(evt.target).addClass('fas');  //toggleClass
   } else {
-    currentUser.removeFavorite($story);
+    currentUser.removeFavorite(story);
     $(evt.target).removeClass('fas');
     $(evt.target).addClass('far');
   }
@@ -119,7 +122,7 @@ function putNewFavoriteOnPage(story) {
   $favStoriesList.prepend(generateStoryMarkup(story));
 }
 
-
+/** Fills favorite page with user's favorites and shows favorite stories list */
 function putFavoritesOnPage() {
   $favStoriesList.empty();
   let favorites = currentUser.favorites;
@@ -131,4 +134,32 @@ function putFavoritesOnPage() {
   $favStoriesList.show();
 }
 
-//NEED TO FIX FAVORITE LIST NOT HAVING ALL PAST FAVORITES
+/** Fills my stories page with user's own stories and shows the list */
+function putMyStoriesOnPage() {
+  $myStoriesList.empty();
+  const trashCan = '<i class="fas fa-trash-alt remove"></i>'
+  let myStories = currentUser.ownStories;
+  for (let story of myStories) {
+    let markup = generateStoryMarkup(story);
+    markup.closest("li").prepend(`${trashCan}`);
+    $myStoriesList.append(markup);
+  }
+  $myStoriesList.show();
+}
+
+/** Removes own story from DOM and calls removeMyStory() to send delete request to API. Only called when trash icon is clicked on my stories page */
+function removeMyStoryOnPage(evt) {
+  const storyId = evt.target.closest("li").id;
+  const story = getStory(storyId);
+  currentUser.removeMyStory(story);
+  $(evt.target.closest("li")).remove();
+}
+
+
+$storiesContainer.on("click", ".remove", removeMyStoryOnPage);
+$storiesContainer.on("mouseover", ".remove", (evt) => {
+  $(evt.target).css("color", "red");
+})
+$storiesContainer.on("mouseout", ".remove", (evt) => {
+  $(evt.target).removeAttr("style");
+})

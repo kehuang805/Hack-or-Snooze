@@ -238,4 +238,29 @@ class User {
       }
     }
   }
+
+  async removeMyStory(story) {
+    let storyId = story.storyId;
+    let requestLink = `${BASE_URL}/stories/${storyId}`;
+    const response = await axios.delete(requestLink, {data: {token: this.loginToken}});
+    console.log(response);
+    let ownStoriesRemoveIndex = this.getMyStoriesRemoveIndex(story);
+    this.ownStories.splice(ownStoriesRemoveIndex, 1);
+    let storyListRemoveIndex = this.getStoryListRemoveIndex(story);
+    storyList.stories.splice(storyListRemoveIndex, 1);
+    story.favorite = false;
+    let removeIndex = this.getFavoriteRemoveIndex(story);
+    this.favorites.splice(removeIndex, 1);
+    
+  }
+
+  getMyStoriesRemoveIndex(story) {
+    let myStoryIds = this.ownStories.map(val => val.storyId);
+    return myStoryIds.indexOf(story.storyId);
+  }
+
+  getStoryListRemoveIndex(story) {
+    let storyIds = storyList.stories.map(val => val.storyId);
+    return storyIds.indexOf(story.storyId);
+  }
 }
