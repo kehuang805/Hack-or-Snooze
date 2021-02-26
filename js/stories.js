@@ -138,3 +138,5 @@ function removeFavoriteOnPage(story) {
   let id = story.storyId;
   $(`#${id}`).remove();
 }
+
+//NEED TO FIX FAVORITE LIST NOT HAVING ALL PAST FAVORITES
